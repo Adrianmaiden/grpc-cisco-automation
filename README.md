@@ -19,8 +19,9 @@ Este proyecto pone un fuerte énfasis en la seguridad. Para más detalles sobre 
 Distribuido bajo la Licencia MIT. Ver LICENSE para más información.
 
 Autores
-Adrian Barroso 
+
+Adrian Barroso Barrios
 
 Diego Axel Estrada Ayala 
 
-Kevin Martinez Acosta 
+Oscar Kevin Martinez Acosta 
