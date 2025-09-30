@@ -1,4 +1,5 @@
 Política de Seguridad (SECURITY.md)
+
 Este documento describe la política de seguridad para el proyecto grpc-cisco-automation. El proyecto sigue los principios de la norma internacional ISO 27001 para establecer un Sistema de Gestión de Seguridad de la Información (SGSI) que garantice la protección de la infraestructura de red gestionada.
 
 1. Objetivo de Seguridad
@@ -8,16 +9,16 @@ El principal objetivo de seguridad es asegurar la Confidencialidad, Integridad y
 2. Análisis de Riesgos
 Se ha realizado un análisis de los principales riesgos de seguridad para el sistema, junto con los controles implementados para mitigarlos:
 
-Riesgo Identificado: Interceptación del tráfico de red (Man-in-the-Middle)
-Impacto Potencial: Robo de credenciales, visualización de configuración.
-Control Implementado (Mitigación): Cifrado con mTLS: Garantiza la confidencialidad del canal.
-
-Riesgo Identificado: Acceso no autorizado al API del switch
-Impacto Potencial: Cambios de configuración maliciosos, denegación de servicio.
-Control Implementado (Mitigación): Autenticación mTLS: El switch valida la identidad del cliente.
-
-Riesgo Identificado: Suplantación de identidad del switch
-Impacto Potencial: El cliente envía configuraciones a un equipo falso.
+  Riesgo Identificado: Interceptación del tráfico de red (Man-in-the-Middle)
+  Impacto Potencial: Robo de credenciales, visualización de configuración.
+  Control Implementado (Mitigación): Cifrado con mTLS: Garantiza la confidencialidad del canal.
+  
+  Riesgo Identificado: Acceso no autorizado al API del switch
+  Impacto Potencial: Cambios de configuración maliciosos, denegación de servicio.
+  Control Implementado (Mitigación): Autenticación mTLS: El switch valida la identidad del cliente.
+  
+  Riesgo Identificado: Suplantación de identidad del switch
+  Impacto Potencial: El cliente envía configuraciones a un equipo falso.
 
 
 3. Controles de Seguridad Implementados
