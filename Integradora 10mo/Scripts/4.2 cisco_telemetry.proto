@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service TelemetryService {
+  rpc SubscribeTelemetry (TelemetryRequest) returns (stream TelemetryData);
+}
+
+message TelemetryRequest {
+  string xpath = 1;  // Ruta YANG a la que nos suscribimos
+}
+
+message TelemetryData {
+  string timestamp = 1;
+  map<string, string> metrics = 2; // Pares clave-valor con las métricas
+}

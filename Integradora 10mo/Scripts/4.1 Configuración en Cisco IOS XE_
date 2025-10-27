@@ -1,0 +1,19 @@
+conf t
+!
+! Habilitar gRPC y definir certificados
+feature grpc
+grpc certificate /bootflash/server-cert.pem /bootflash/server-key.pem
+grpc port 50051
+grpc tls
+grpc vrf management
+!
+! Habilitar modelo de telemetría
+telemetry ietf subscription 101
+ encoding encode-kvgpb
+ filter xpath /interfaces/interface/state/counters
+ stream yang-push
+ update-policy periodic 5000
+ receiver ip address 192.168.1.10 57000 protocol grpc-tls
+!
+end
+copy running-config startup-config

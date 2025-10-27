@@ -1,0 +1,67 @@
+// Archivo: protos/network_manager.proto
+syntax = "proto3";
+
+package network_manager;
+
+// ===================================================================
+// 1. DEFINICIÓN DEL SERVICIO
+// ===================================================================
+
+// El servicio NetworkManager expone los métodos para gestionar y monitorear
+// dispositivos de red.
+service NetworkManager {
+  // RPC para aplicar configuración a una o más interfaces (operación en lote).
+  rpc ConfigureInterfaces(InterfaceConfigRequest) returns (ConfigResponse);
+
+  // RPC de streaming para suscribirse a datos de telemetría.
+  rpc GetTelemetry(TelemetryRequest) returns (stream TelemetryData);
+}
+
+
+// ===================================================================
+// 2. MENSAJES PARA CONFIGURACIÓN
+// ===================================================================
+
+// Mensaje que representa la configuración de una única interfaz.
+message InterfaceConfig {
+  string name = 1;         // ej. "Ethernet1/1"
+  string description = 2;  // ej. "Conexión a servidor web"
+  string ip_address = 3;   // ej. "10.1.1.1/24"
+  int32 vlan_id = 4;
+  bool enabled = 5;        // true para 'no shutdown', false para 'shutdown'
+}
+
+// Petición para configurar una lista de interfaces.
+message InterfaceConfigRequest {
+  repeated InterfaceConfig interfaces = 1; // 'repeated' indica una lista.
+}
+
+// Respuesta genérica para operaciones de configuración.
+message ConfigResponse {
+  bool success = 1;
+  string message = 2; // ej. "2 interfaces configuradas exitosamente."
+}
+
+
+// ===================================================================
+// 3. MENSAJES PARA TELEMETRÍA
+// ===================================================================
+
+// Petición para suscribirse a un flujo de telemetría.
+message TelemetryRequest {
+  string sensor_path = 1; // ej. "/system/cpu/utilization"
+}
+
+// Datos de telemetría enviados por el servidor.
+message TelemetryData {
+  string sensor_path = 1;
+  string timestamp = 2;
+
+  // 'oneof' permite que el valor pueda ser de diferentes tipos,
+  // dándole flexibilidad al mensaje.
+  oneof value {
+    double double_val = 3;
+    int64 int_val = 4;
+    string string_val = 5;
+  }
+}
