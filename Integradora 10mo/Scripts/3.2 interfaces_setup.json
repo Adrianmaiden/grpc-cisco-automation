@@ -1,0 +1,23 @@
+{
+  "interfaces": [
+    {
+      "name": "Ethernet1/1",
+      "description": "Conexion a Servidor-WEB-01",
+      "ip_address": "10.10.100.5/24",
+      "vlan_id": 100,
+      "enabled": true
+    },
+    {
+      "name": "Ethernet1/2",
+      "description": "Conexion a Servidor-DB-01",
+      "ip_address": "10.10.200.5/24",
+      "vlan_id": 200,
+      "enabled": true
+    },
+    {
+      "name": "Ethernet1/10",
+      "description": "Interfaz de Mantenimiento",
+      "enabled": false
+    }
+  ]
+}

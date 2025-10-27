@@ -1,0 +1,9 @@
+Archivo /etc/telegraf/telegraf.conf
+[[inputs.cisco_telemetry_mdt]]
+  transport = "grpc"
+  service_address = ":57000"
+
+  [inputs.cisco_telemetry_mdt.tls]
+    ca_file = "/etc/telegraf/ca-cert.pem"
+    cert_file = "/etc/telegraf/server-cert.pem"
+    key_file = "/etc/telegraf/server-key.pem"
