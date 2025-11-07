@@ -9,7 +9,7 @@ KEY_NAME = os.environ.get('EC2_KEY_NAME')
 SECURITY_GROUP_ID = os.environ.get('EC2_SECURITY_GROUP_ID')
 
 # --- Configuración del Proyecto ---
-AMI_ID = "ami-0ecb62995f6bb549"  # Ubuntu 22.04 LTS en us-east-1
+AMI_ID = "ami-0c398cb65a93047f2"  # Ubuntu 22.04 LTS en us-east-1
 INSTANCE_TYPE = "t2.micro"       # Incluido en la capa gratuita de AWS
 INSTANCE_TAG_KEY = "project"
 INSTANCE_TAG_VALUE = "grpc-cisco-test" # Un tag único
