@@ -1,4 +1,4 @@
-name: 'Desplegar EC2 (Prueba simple)'
+name: 'Desplegar EC2'
 
 on:
   push:
