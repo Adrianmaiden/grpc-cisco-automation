@@ -1,0 +1,57 @@
+// Archivo: protos/network_manager.proto
+syntax = "proto3";
+
+package network_manager;
+
+// ===================================================================
+// 1. DEFINICIÓN DEL SERVICIO
+// ===================================================================
+
+service NetworkManager {
+  // RPC para configurar interfaces (envía una lista, recibe confirmación)
+  rpc ConfigureInterfaces(InterfaceConfigRequest) returns (ConfigResponse);
+
+  // RPC para obtener telemetría en tiempo real (Streaming)
+  rpc GetTelemetry(TelemetryRequest) returns (stream TelemetryData);
+}
+
+// ===================================================================
+// 2. MENSAJES DE CONFIGURACIÓN
+// ===================================================================
+
+message InterfaceConfig {
+  string name = 1;         // Ejemplo: "Ethernet1/1"
+  string description = 2;  // Ejemplo: "Servidor Web"
+  string ip_address = 3;   // Ejemplo: "192.168.10.1/24"
+  bool enabled = 4;        // true = no shutdown
+}
+
+message InterfaceConfigRequest {
+  // "repeated" significa que es una lista de interfaces
+  repeated InterfaceConfig interfaces = 1;
+}
+
+message ConfigResponse {
+  bool success = 1;        // true si todo salió bien
+  string message = 2;      // Mensaje de error o éxito
+}
+
+// ===================================================================
+// 3. MENSAJES DE TELEMETRÍA
+// ===================================================================
+
+message TelemetryRequest {
+  string sensor_path = 1;  // Ejemplo: "sys/intf/phys-[eth1/1]"
+}
+
+message TelemetryData {
+  string timestamp = 1;
+  string key = 2;          // Nombre del dato (ej. "load_interval1")
+  
+  // "oneof" permite enviar diferentes tipos de datos en el mismo campo
+  oneof value {
+    double double_val = 3;
+    int64 int_val = 4;
+    string string_val = 5;
+  }
+}
