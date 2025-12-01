@@ -35,6 +35,7 @@ El siguiente diagrama ilustra el flujo de datos completo del sistema, desde la d
 
 
 🛠️ Instalación y Despliegue
+
 Requisitos Previos
 Linux (Ubuntu 20.04+ recomendado)
 
@@ -43,12 +44,12 @@ Python 3.8 o superior
 OpenSSL
 
 1. Clonar el repositorio
-Bash
 
-git clone [https://github.com/tu-usuario/grpc-cisco-automation.git](https://github.com/tu-usuario/grpc-cisco-automation.git)
+git clone [[https://github.com/tu-usuario/grpc-cisco-automation.git](https://github.com/Adrianmaiden/grpc-cisco-automation.git)](https://github.com/tu-usuario/grpc-cisco-automation.git)]
+
 cd grpc-cisco-automation
+
 2. Configurar el entorno virtual
-Bash
 
 python3 -m venv venv
 source venv/bin/activate
@@ -62,17 +63,16 @@ python3 generate_certs.py all
 Esto creará la carpeta /certs con las credenciales necesarias.
 
 💻 Uso
+
 Para ejecutar una demostración completa del sistema en tu máquina local:
 
 Paso 1: Iniciar el Simulador (Terminal 1)
 Este servicio emula un switch Cisco NX-OS con gRPC habilitado.
 
-Bash
 
 source venv/bin/activate
 python3 mock_server.py
 Paso 2: Iniciar la Plataforma Web (Terminal 2)
-Bash
 
 source venv/bin/activate
 python3 dashboard/app.py
@@ -80,6 +80,7 @@ Paso 3: Acceder
 Abre tu navegador y visita: http://localhost:5000
 
 🛡️ Seguridad
+
 Este proyecto pone un fuerte énfasis en la seguridad operativa.
 
 Cifrado: Todo el tráfico de gestión viaja encapsulado en TLS 1.2+.
@@ -89,6 +90,7 @@ Autenticación: No se permite ninguna conexión gRPC sin un certificado cliente 
 Para más detalles sobre nuestra política de seguridad, análisis de riesgos y cómo reportar vulnerabilidades, por favor consulta nuestro archivo SECURITY.md.
 
 👥 Autores
+
 Este proyecto ha sido desarrollado por:
 
 Adrian Barroso Barrios
@@ -98,4 +100,5 @@ Diego Axel Estrada Ayala
 Oscar Kevin Martinez Acosta
 
 📄 Licencia
+
 Distribuido bajo la Licencia MIT. Ver el archivo LICENSE para más información.
