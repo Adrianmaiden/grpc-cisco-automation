@@ -1,68 +1,66 @@
-Política de Seguridad (SECURITY.md)
+# Política de Seguridad
 
-Este documento describe la política de seguridad para el proyecto grpc-cisco-automation. El proyecto sigue los principios de la norma internacional ISO 27001 para establecer un Sistema de Gestión de Seguridad de la Información (SGSI) que garantice la protección de la infraestructura de red gestionada.
+> **Nota:** Este proyecto sigue los principios de la norma internacional **ISO 27001** para establecer un Sistema de Gestión de Seguridad de la Información (SGSI) enfocado en la automatización de redes.
 
-1. Objetivo de Seguridad
-El principal objetivo de seguridad es asegurar la Confidencialidad, Integridad y Autenticidad (la tríada CIA) de toda la comunicación y configuración gestionada a través de este sistema.
+## 1. Objetivo de Seguridad
+El objetivo principal es garantizar la **Tríada CIA** en toda la infraestructura gestionada por `grpc-cisco-automation`:
+
+* **Confidencialidad:** Solo las partes autorizadas pueden acceder a los datos.
+* **Integridad:** Los datos de configuración no son alterados en tránsito.
+* **Autenticidad:** Confirmación absoluta de la identidad de switches y clientes.
+
+---
+
+## 2. Análisis de Riesgos y Mitigación
+Hemos realizado un análisis de riesgos para identificar amenazas críticas y los controles técnicos implementados para neutralizarlas.
+
+| Riesgo Identificado | Impacto Potencial | Control Implementado (Mitigación) |
+| :--- | :--- | :--- |
+| **Interceptación (Man-in-the-Middle)** | Robo de credenciales, visualización de `running-config`. | **Cifrado TLS:** Todo el canal gRPC está cifrado, haciendo ilegible el tráfico para terceros. |
+| **Acceso no autorizado al API** | Cambios de configuración maliciosos, DoS. | **Autenticación mTLS:** El switch valida criptográficamente el certificado del cliente antes de aceptar comandos. |
+| **Suplantación de Switch (Spoofing)** | El cliente envía configuraciones a un equipo falso/atacante. | **Validación de Servidor:** El cliente Python valida el certificado del switch contra la CA raíz. |
+
+---
+
+## 3. Controles de Seguridad Implementados (ISO 27001)
+
+Para cumplir con los objetivos y mitigar los riesgos, se han desplegado los siguientes controles alineados con el **Anexo A** de la norma ISO 27001.
+
+### 3.1. Controles Criptográficos (A.10)
+Toda la comunicación entre el cliente (Python/gRPC) y el agente en el switch Cisco está protegida mediante **TLS Mutuo (mTLS)**.
+* **Confidencialidad:** Cifrado robusto (AES/RSA/ECC según configuración) en tránsito.
+* **Integridad:** Algoritmos de hash (SHA-256) garantizan que los payloads (JSON/XML) no sean modificados.
+
+### 3.2. Controles de Acceso (A.9)
+El acceso a la API de gestión (gRPC port 57400/etc) es de "Privilegio Mínimo":
+* **Autenticación Fuerte:** Basada estrictamente en certificados **X.509**. No se permite autenticación de texto plano.
+* **Autorización Bidireccional:** Tanto el cliente como el servidor deben presentar certificados firmados por la Autoridad Certificadora (CA) privada del proyecto.
+
+### 3.3. Gestión de Activos y Secretos (A.8)
+Los activos criptográficos son los componentes más críticos.
+* **Protección de Secretos:** Las llaves privadas (`.key`, `.pem`) **NUNCA** se almacenan en el repositorio.
+* **Git Ignore:** El archivo `.gitignore` está configurado para excluir extensiones de certificados y llaves.
+* **Responsabilidad del Usuario:** Se instruye al usuario a generar sus propias PKI y resguardarlas en bóvedas seguras (ej. HashiCorp Vault) o directorios locales con permisos `chmod 600`.
+
+---
+
+## 4. Gestión y Reporte de Vulnerabilidades
+
+Tomamos la seguridad muy en serio y agradecemos la divulgación responsable.
+
+### Política de Reporte
+Si descubres una vulnerabilidad, por favor **NO la divulgues públicamente** (GitHub Issues) hasta que haya sido analizada.
+
+### Cómo Reportar
+Envía un correo electrónico al mantenedor del proyecto:
 
 
-2. Análisis de Riesgos
-Se ha realizado un análisis de los principales riesgos de seguridad para el sistema, junto con los controles implementados para mitigarlos:
+**Asunto:** `Reporte de Vulnerabilidad: grpc-cisco-automation`
 
-  Riesgo Identificado: Interceptación del tráfico de red (Man-in-the-Middle)
-  Impacto Potencial: Robo de credenciales, visualización de configuración.
-  Control Implementado (Mitigación): Cifrado con mTLS: Garantiza la confidencialidad del canal.
-  
-  Riesgo Identificado: Acceso no autorizado al API del switch
-  Impacto Potencial: Cambios de configuración maliciosos, denegación de servicio.
-  Control Implementado (Mitigación): Autenticación mTLS: El switch valida la identidad del cliente.
-  
-  Riesgo Identificado: Suplantación de identidad del switch
-  Impacto Potencial: El cliente envía configuraciones a un equipo falso.
+Por favor incluye:
+1.  Descripción detallada del fallo.
+2.  Pasos para reproducirlo (PoC).
+3.  Impacto potencial en la red.
+4.  Entorno de pruebas (Versión de IOS XE/NX-OS, versión de Python).
 
-
-3. Controles de Seguridad Implementados
-Para cumplir con los objetivos de seguridad y mitigar los riesgos identificados, se han implementado los siguientes controles, alineados con el Anexo A de la norma ISO 27001.
-
-3.1. Controles Criptográficos (Anexo A.10)
-Toda la comunicación entre el cliente Python y el agente gRPC en el switch Cisco está protegida mediante TLS Mutuo (mTLS). Este control criptográfico asegura:
-
-Confidencialidad: El tráfico se cifra, impidiendo que sea leído por terceros no autorizados.
-
-Integridad: Se aplican mecanismos para detectar cualquier modificación no autorizada de los datos en tránsito.
-
-3.2. Controles de Acceso (Anexo A.9)
-El acceso a la API de gestión del switch está estrictamente controlado.
-
-Autenticación Fuerte: Se utiliza un modelo de autenticación basado en certificados X.509. Solo los clientes que posean un certificado válido, firmado por la Autoridad Certificadora (CA) del proyecto, pueden establecer una conexión.
-
-Autorización Bidireccional: Gracias a mTLS, tanto el servidor (switch) como el cliente validan sus identidades mutuamente, previniendo ataques de suplantación de identidad en ambas direcciones.
-
-3.3. Gestión de Activos y Secretos (Anexo A.8)
-Los activos criptográficos, como las llaves privadas de la CA, el servidor y el cliente, son los componentes más sensibles del sistema.
-
-Protección de Secretos: Todas las llaves privadas y certificados no deben ser almacenados en el repositorio de Git. El archivo .gitignore está configurado para excluir estos archivos.
-
-Guía de Generación Segura: La documentación del proyecto instruye a los usuarios para que generen sus propios certificados y los almacenen en un lugar seguro con permisos de acceso restringidos.
-
-
-4. Gestión y Reporte de Vulnerabilidades
-Tomamos la seguridad de este proyecto muy en serio. Agradecemos a la comunidad por sus esfuerzos en la divulgación responsable de vulnerabilidades.
-
-Política de Reporte
-Si descubres una vulnerabilidad de seguridad, por favor, ayúdanos reportándola de manera privada. Te pedimos que no divulgues la vulnerabilidad públicamente hasta que hayamos tenido la oportunidad de analizarla y solucionarla.
-
-Cómo Reportar una Vulnerabilidad
-Envía un correo electrónico a [Correo del Líder de Proyecto] con el asunto "Reporte de Vulnerabilidad: grpc-cisco-automation".
-
-En el cuerpo del correo, por favor, incluye la siguiente información:
-
-Una descripción detallada de la vulnerabilidad.
-
-Los pasos necesarios para reproducirla.
-
-El impacto potencial de la vulnerabilidad.
-
-Cualquier prueba de concepto o script que hayas utilizado.
-
-Nos comprometemos a investigar todos los reportes de manera oportuna y a trabajar para solucionar cualquier problema de seguridad encontrado.
+Nos comprometemos a investigar y responder en un plazo razonable para solucionar cualquier brecha de seguridad.
