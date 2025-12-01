@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-cogs me-2"></i> Despliegue de Configuración</h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">1. Cargar Archivo</div>
+                <div class="card-body">
+                    <p class="text-muted">Seleccione un archivo JSON para aplicar al Switch.</p>
+                    <form id="uploadForm">
+                        <input type="file" class="form-control mb-3" id="configFile" accept=".json" required>
+                        <button type="submit" class="btn btn-success w-100" id="btnDeploy">
+                            <i class="fas fa-rocket me-2"></i> Desplegar Configuración
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle"></i> El archivo será procesado por el motor <strong>gRPC/CLI</strong> y aplicado de forma atómica.
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header bg-dark text-success border-secondary">
+                    <i class="fas fa-terminal me-2"></i> Consola de Operaciones
+                </div>
+                <div class="card-body bg-black p-0">
+                    <div id="terminal" class="terminal-window">
+                        <span class="text-muted">Esperando comando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('configFile');
+        const terminal = document.getElementById('terminal');
+        const btn = document.getElementById('btnDeploy');
+
+        if (!fileInput.files[0]) return;
+
+        // UI Loading
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        terminal.innerHTML = '<span class="text-warning">>> Iniciando subida de archivo...\n</span>';
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            const response = await fetch('/api/deploy', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            // Mostrar Logs en la Terminal
+            terminal.innerText = result.logs;
+            
+            // Scroll al final
+            terminal.scrollTop = terminal.scrollHeight;
+
+        } catch (error) {
+            terminal.innerHTML += `\n<span class="text-danger">>> Error de conexión: ${error}</span>`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-rocket me-2"></i> Desplegar Configuración';
+        }
+    });
+</script>
+{% endblock %}

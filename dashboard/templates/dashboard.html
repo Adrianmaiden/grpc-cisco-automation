@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-satellite-dish me-2"></i> Monitor en Tiempo Real</h2>
+    <span class="badge bg-secondary" id="last-update">Esperando datos...</span>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-header">CPU Load</div>
+            <div class="card-body">
+                <div class="display-value" id="cpu-val">0 %</div>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar" id="cpu-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-header">Memoria Libre</div>
+            <div class="card-body">
+                <div class="display-value text-success" id="mem-val">0 MB</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-header">Tráfico Eth1/1</div>
+            <div class="card-body">
+                <div class="display-value text-info" id="net-val">0 Kbps</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">Histórico de Tráfico (Últimos 60 segundos)</div>
+    <div class="card-body">
+        <canvas id="trafficChart" height="80"></canvas>
+    </div>
+</div>
+
+<script>
+    // Configuración Chart.js
+    const ctx = document.getElementById('trafficChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Tráfico (Kbps)',
+                data: [],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            scales: { x: { display: false }, y: { beginAtZero: true, grid: { color: '#334155' } } },
+            plugins: { legend: { display: false } },
+            animation: false
+        }
+    });
+
+    // Polling al Backend (Cada 2 segundos)
+    async function updateData() {
+        try {
+            const res = await fetch('/api/telemetry');
+            const data = await res.json();
+
+            // Actualizar DOM
+            document.getElementById('cpu-val').innerText = data.cpu + " %";
+            document.getElementById('cpu-bar').style.width = data.cpu + "%";
+            document.getElementById('mem-val').innerText = data.memory + " MB";
+            document.getElementById('net-val').innerText = data.traffic + " Kbps";
+            document.getElementById('last-update').innerText = "Sync: " + data.last_update;
+
+            // Actualizar Gráfica
+            if (chart.data.labels.length > 30) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            chart.data.labels.push(data.last_update);
+            chart.data.datasets[0].data.push(data.traffic);
+            chart.update();
+
+        } catch (e) { console.error("Error polling:", e); }
+    }
+    setInterval(updateData, 2000);
+</script>
+{% endblock %}
