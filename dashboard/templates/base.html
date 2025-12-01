@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Manager | gRPC Automation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='libs/css/bootstrap.min.css') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='libs/css/fontawesome.css') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3">
+    
+    <script src="{{ url_for('static', filename='libs/js/chart.js') }}"></script>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h3 class="text-center text-white mb-4">Network<span style="color: var(--accent);">Mgr</span></h3>
+        
+        <a href="/" class="{{ 'active' if request.path == '/' else '' }}">
+            <i class="fas fa-chart-line me-2"></i> Dashboard
+        </a>
+        
+        <a href="/configure" class="{{ 'active' if request.path == '/configure' else '' }}">
+            <i class="fas fa-terminal me-2"></i> Configurar
+        </a>
+        
+        <hr class="text-secondary">
+        <small class="text-muted ms-3">DEMO TOOLS</small>
+        
+        <a href="/editor" class="{{ 'active' if request.path == '/editor' else '' }}">
+            <i class="fas fa-code me-2"></i> Editor JSON
+        </a>
+        <a href="/library" class="{{ 'active' if request.path == '/library' else '' }}">
+            <i class="fas fa-folder-open me-2"></i> Biblioteca
+        </a>
+        <a href="/quick" class="{{ 'active' if request.path == '/quick' else '' }}">
+            <i class="fas fa-bolt me-2"></i> Quick Configs
+        </a>
+    </div>
+
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{{ url_for('static', filename='libs/js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

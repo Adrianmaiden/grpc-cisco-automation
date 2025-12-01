@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-satellite-dish me-2"></i> Monitor en Tiempo Real</h2>
+    <span class="badge bg-secondary" id="last-update">Conectando...</span>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-header">CPU Load</div>
+            <div class="card-body">
+                <div class="display-value" id="cpu-val">-- %</div>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar" id="cpu-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-header">Memoria Libre</div>
+            <div class="card-body">
+                <div class="display-value text-success" id="mem-val">-- MB</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-header">Tráfico Eth1/1</div>
+            <div class="card-body">
+                <div class="display-value text-info" id="net-val">-- Kbps</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">Histórico de Tráfico (Últimos 60 segundos)</div>
+    <div class="card-body">
+        <canvas id="trafficChart" height="80"></canvas>
+        <p id="chart-error" class="text-danger text-center mt-3" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i> No se pudo cargar la gráfica (Sin conexión a Internet), pero los datos numéricos funcionan.
+        </p>
+    </div>
+</div>
+
+<script>
+    // Variable global para la gráfica
+    let trafficChart = null;
+
+    // --- 1. Intentar Inicializar la Gráfica (Protegido con Try-Catch) ---
+    try {
+        // Verificamos si la librería Chart.js se cargó correctamente
+        if (typeof Chart !== 'undefined') {
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+            trafficChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Tráfico (Kbps)',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    scales: { 
+                        x: { display: false }, 
+                        y: { beginAtZero: true, grid: { color: '#334155' } } 
+                    },
+                    plugins: { legend: { display: false } },
+                    animation: false
+                }
+            });
+        } else {
+            // Si no hay internet y no cargó Chart.js, mostramos aviso y ocultamos canvas
+            throw new Error("Chart.js no está definido");
+        }
+    } catch (e) {
+        console.warn("Modo Sin Gráficas activado:", e);
+        document.getElementById('trafficChart').style.display = 'none';
+        document.getElementById('chart-error').style.display = 'block';
+    }
+
+    // --- 2. Función de Actualización de Datos ---
+    async function updateData() {
+        try {
+            // Petición al Backend Local
+            const res = await fetch('/api/telemetry');
+            
+            if (!res.ok) throw new Error("Error en respuesta API");
+            
+            const data = await res.json();
+
+            // A. Actualizar Textos (Esto funciona SIEMPRE)
+            document.getElementById('cpu-val').innerText = data.cpu + " %";
+            document.getElementById('cpu-bar').style.width = data.cpu + "%";
+            document.getElementById('mem-val').innerText = data.memory + " MB";
+            document.getElementById('net-val').innerText = data.traffic + " Kbps";
+            
+            // Actualizar Badge de Estado
+            const badge = document.getElementById('last-update');
+            badge.innerText = "Sync: " + data.last_update;
+            badge.className = "badge bg-success";
+
+            // B. Actualizar Gráfica (SOLO si existe)
+            if (trafficChart) {
+                // Mantener solo los últimos 30 puntos
+                if (trafficChart.data.labels.length > 30) {
+                    trafficChart.data.labels.shift();
+                    trafficChart.data.datasets[0].data.shift();
+                }
+                // Agregar nuevo punto
+                trafficChart.data.labels.push(data.last_update);
+                trafficChart.data.datasets[0].data.push(data.traffic);
+                trafficChart.update();
+            }
+
+        } catch (e) { 
+            console.error("Error obteniendo datos:", e); 
+            const badge = document.getElementById('last-update');
+            badge.innerText = "Desconectado";
+            badge.className = "badge bg-danger";
+        }
+    }
+
+    // Iniciar el ciclo de actualización cada 2 segundos
+    setInterval(updateData, 2000);
+    
+    // Llamada inicial rápida
+    updateData();
+</script>
+{% endblock %}

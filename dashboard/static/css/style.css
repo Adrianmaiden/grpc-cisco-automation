@@ -1,0 +1,91 @@
+/* dashboard/static/css/style.css */
+:root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --danger: #ef4444;
+    --terminal-bg: #000000;
+    --terminal-text: #33ff00;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    height: 100vh;
+    background-color: var(--bg-card);
+    border-right: 1px solid #334155;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    padding-top: 20px;
+}
+
+.sidebar a {
+    padding: 15px 25px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover, .sidebar a.active {
+    color: #fff;
+    background-color: var(--accent);
+    border-left: 5px solid #fff;
+}
+
+/* Contenido Principal */
+.main-content {
+    margin-left: 250px;
+    padding: 30px;
+}
+
+/* Tarjetas */
+.card {
+    background-color: var(--bg-card);
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid #334155;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.display-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+/* Terminal de Logs */
+.terminal-window {
+    background-color: var(--terminal-bg);
+    color: var(--terminal-text);
+    font-family: 'Consolas', 'Courier New', monospace;
+    padding: 15px;
+    border-radius: 5px;
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    white-space: pre-wrap;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+}
+
+.btn-primary { background-color: var(--accent); border: none; }
+.btn-success { background-color: var(--success); border: none; }

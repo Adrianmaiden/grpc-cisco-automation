@@ -1,0 +1,17 @@
+syntax = "proto3";
+package cisco_grpc;
+
+service gRPCConfigOper {
+    rpc Config(ConfigArgs) returns (ConfigReply);
+}
+
+message ConfigArgs {
+    string reqID = 1;
+    string cli = 2;
+}
+
+message ConfigReply {
+    string reqID = 1;
+    string output = 2;
+    string errors = 3;
+}
