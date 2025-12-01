@@ -3,56 +3,89 @@ from concurrent import futures
 import time
 import sys
 import os
+import random
+from datetime import datetime
 
-# Ajuste de path para encontrar los protos
+# Ajuste de path
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from protos import network_manager_pb2, network_manager_pb2_grpc
 
+# --- IMPORTAMOS LOS DOS PROTOCOLOS ---
+# 1. NetworkManager (Para Telemetría - Lo que tú diseñaste)
+from protos import network_manager_pb2, network_manager_pb2_grpc
+# 2. Cisco GRPC (Para Configuración - Lo que el switch habla)
+from protos import cisco_pb2, cisco_pb2_grpc
+
+# --- SERVICIO 1: TELEMETRÍA (Tu diseño) ---
 class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
-    """
-    Simula ser el Switch recibiendo la configuración.
-    """
-    def ConfigureInterfaces(self, request, context):
-        print(f"\n🔔 [SERVIDOR] ¡Petición recibida!")
-        print(f"   -> Interfaces a configurar: {len(request.interfaces)}")
+    def GetTelemetry(self, request, context):
+        sensor = request.sensor_path
+        # print(f"📊 [MOCK] Cliente suscrito a telemetría: {sensor}")
         
-        # Simulamos procesar cada interfaz
-        for iface in request.interfaces:
-            status = "HABILITADA" if iface.enabled else "DESHABILITADA"
-            print(f"      - Configurando {iface.name} ({iface.ip_address}) -> Estado: {status}")
+        try:
+            while context.is_active():
+                timestamp = datetime.now().strftime("%H:%M:%S")
+                
+                # Enviamos datos aleatorios simulando el switch
+                yield network_manager_pb2.TelemetryData(
+                    sensor_path=sensor, timestamp=timestamp, 
+                    key="cpu_usage", double_val=random.uniform(10.5, 45.0))
+                
+                yield network_manager_pb2.TelemetryData(
+                    sensor_path=sensor, timestamp=timestamp, 
+                    key="memory_free", int_val=random.randint(2048, 4096))
+                
+                yield network_manager_pb2.TelemetryData(
+                    sensor_path=sensor, timestamp=timestamp, 
+                    key="eth1_1_traffic", double_val=random.uniform(100.0, 500.0))
+                
+                time.sleep(2)
+        except Exception:
+            pass
+
+# --- SERVICIO 2: CONFIGURACIÓN CISCO (Simulación CLI) ---
+class CiscoConfig(cisco_pb2_grpc.gRPCConfigOperServicer):
+    def Config(self, request, context):
+        print(f"\n🔧 [MOCK CISCO] ¡Comando de configuración recibido!")
+        print(f"   📜 Payload:\n{request.cli}")
         
-        print("   ✅ Configuración aplicada exitosamente en el Mock.\n")
-        
-        # Respondemos al cliente
-        return network_manager_pb2.ConfigResponse(
-            success=True,
-            message="Configuración aplicada exitosamente en el mock."
+        # Simulamos la respuesta típica de un Switch Cisco
+        fake_output = f"""
+configure terminal
+{request.cli}
+Copy complete, now saving to disk (startup-config)
+"""
+        # Devolvemos éxito
+        return cisco_pb2.ConfigReply(
+            reqID=request.reqID,
+            output=fake_output,
+            errors=""
         )
 
 def serve():
-    # Usamos las mismas credenciales del servidor que generamos para el switch
+    # Cargar certificados
     server_key = open('certs/server-key.pem', 'rb').read()
     server_cert = open('certs/server-cert.pem', 'rb').read()
     ca_cert = open('certs/ca-cert.pem', 'rb').read()
 
     creds = grpc.ssl_server_credentials(
-        [(server_key, server_cert)],
-        root_certificates=ca_cert,
+        [(server_key, server_cert)], 
+        root_certificates=ca_cert, 
         require_client_auth=True
     )
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    network_manager_pb2_grpc.add_NetworkManagerServicer_to_server(NetworkManager(), server)
     
-    # Escuchamos en el puerto 50051 de la máquina local
+    # --- REGISTRAMOS AMBOS SERVICIOS ---
+    network_manager_pb2_grpc.add_NetworkManagerServicer_to_server(NetworkManager(), server)
+    cisco_pb2_grpc.add_gRPCConfigOperServicer_to_server(CiscoConfig(), server)
+    # -----------------------------------
+    
     server.add_secure_port('[::]:50051', creds)
     
-    print("🚀 Servidor Mock NetworkManager escuchando en puerto 50051...")
-    print("   (Presiona Ctrl+C para detener)")
+    print("🚀 Mock Server Híbrido (Telemetría + CLI) escuchando en puerto 50051...")
     server.start()
     try:
-        while True:
-            time.sleep(86400)
+        server.wait_for_termination()
     except KeyboardInterrupt:
         server.stop(0)
 
